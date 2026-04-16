@@ -1,0 +1,8 @@
+README.md
+main.py
+pyproject.toml
+yolo_finetune_pipeline.egg-info/PKG-INFO
+yolo_finetune_pipeline.egg-info/SOURCES.txt
+yolo_finetune_pipeline.egg-info/dependency_links.txt
+yolo_finetune_pipeline.egg-info/requires.txt
+yolo_finetune_pipeline.egg-info/top_level.txt

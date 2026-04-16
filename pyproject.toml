@@ -1,0 +1,17 @@
+[project]
+name = "yolo-finetune-pipeline"
+version = "0.1.0"
+description = "Automated dataset generation and YOLO finetuning pipeline using zero-shot models (YOLO-World / Grounding DINO)."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision",
+    "ultralytics>=8.0.0",
+    "opencv-python",
+    "pyyaml",
+    "numpy",
+    "pillow",
+    "transformers>=4.30.0",
+]
+

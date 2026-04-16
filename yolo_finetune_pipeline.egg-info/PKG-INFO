@@ -1,0 +1,111 @@
+Metadata-Version: 2.4
+Name: yolo-finetune-pipeline
+Version: 0.1.0
+Summary: Automated dataset generation and YOLO finetuning pipeline using zero-shot models (YOLO-World / Grounding DINO).
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: torch>=2.0.0
+Requires-Dist: torchvision
+Requires-Dist: ultralytics>=8.0.0
+Requires-Dist: opencv-python
+Requires-Dist: pyyaml
+Requires-Dist: numpy
+Requires-Dist: pillow
+Requires-Dist: transformers>=4.30.0
+
+# YOLO Finetune Pipeline
+
+このリポジトリは、動画から自動で物体検出のデータセットを作成し、独自のデータセットでYOLOモデルのファインチューニング（追加学習）を行うための一連のパイプラインです。
+
+**Grounding DINO** や **YOLO-World** などのゼロショット検出モデルを利用して、アノテーション（ラベル付け）作業を完全に自動化しています。
+
+## ⚙️ 依存環境のセットアップ
+
+本リポジトリは `pyproject.toml` によるパッケージ管理をサポートしています。
+以下の手順で、必要なライブラリ（DINO用の `transformers` 含む）をインストールし、再現可能な環境を構築します。
+
+ご自身のPC（またはクラウド環境）にリポジトリをクローンした後、以下を実行してください。
+
+```bash
+# 仮想環境を作成してアクティベート (推奨)
+python -m venv .venv
+source .venv/bin/activate
+
+# 必要なパッケージをまとめてインストール
+pip install -e .
+```
+
+*※ Mac等環境によっては `pip3`, `python3` に適宜読み替えてください。*
+*※ GPUで学習や推論を高速に実行する場合は、PyTorch公式の手順に従ってCUDA対応のTorchをインストールしてください。*
+
+---
+
+## 🚀 ステップ1: データ作成 (`create_dataset.py`)
+
+元の動画ファイルと、検出したい「ターゲットのテキスト」を入力して、YOLOフォーマットの学習データセットを自動生成します。
+生成時に訓練用・検証用データの分割は行わず、すべて `images` と `labels` フォルダに格納されるため、データ管理が非常にシンプルです。
+
+### 基本的な使い方（DINO を使用する場合）
+
+DINO（Grounding DINO）は非常に高精度なテキストベースの物体検出モデルです。`--model dino` を指定するだけで、Hugging Faceから自動的にモデルがダウンロードされ、実行されます。
+
+```bash
+# パターン1: Grounding DINOで作成
+python create_dataset.py my_video.mp4 --targets "door handle:0" "button:1" --model dino --dir my_dataset_room
+```
+
+### そのほかのモデルを使用する場合
+
+高速な YOLO-World や、学習済みのカスタムモデルをアノテーターとして使用することも可能です。
+
+```bash
+# パターン2: YOLO-Worldで高速に作成
+python create_dataset.py my_video.mp4 --targets "door handle:0" "button:1" --model yolo --dir my_dataset_room
+
+# パターン3: すでに学習済みのカスタムYOLOを使う
+python create_dataset.py my_video.mp4 --targets "door handle:0" "button:1" --model custom --custom_weights path/to/best.pt --dir my_dataset_room
+
+# パターン4: 背景のみの動画（ネガティブサンプル）を生成
+python create_dataset.py background.mp4 --negative --dir my_dataset_background
+```
+
+**便利なオプション:**
+- `--interval <数値>`: 動画から何フレームごとに画像を抽出するか。デフォルトは `5` です。
+- `--threshold <数値>`: テキストでの検出の確信度しきい値。デフォルトは `0.35` です。
+
+---
+
+## 🚀 ステップ2: モデルの学習 (`train.py`)
+
+作成したデータセットを利用して、YOLOモデルの学習を実行します。
+学習時に、指定した割合（`val_ratio`）で画像を動的にシャッフルして「訓練用(Train)」と「検証用(Val)」に自動で分割します。
+
+### 学習の設定ファイルを書く
+
+任意の名前（例: `train_config.yaml`）で設定ファイルを作成します。
+
+```yaml
+# train_config.yaml
+
+datasets:
+  - my_dataset_room        # create_dataset.py で作成したフォルダ名
+  - my_dataset_background  # ネガティブサンプルも含めることができます
+
+val_ratio: 0.2           # 20% を検証用データ（Val）に割り当てる (デフォルト0.2)
+weights: "yolov8m.pt"    # 事前学習済みベースモデル
+project: "my_models"     # 保存先のプロジェクトフォルダ
+name: "room_detector"    # 保存するモデル名
+epochs: 100
+batch: 16
+imgsz: 640
+```
+
+### 学習の開始
+
+設定ファイルを指定して、スクリプトを実行するだけです。
+
+```bash
+python train.py train_config.yaml
+```
+
+学習が完了すると、`my_models/room_detector/weights/best.pt` に最高の精度を出したモデルが保存されます。

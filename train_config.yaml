@@ -1,0 +1,11 @@
+datasets:
+  - my_dataset_room        # The directory name created by create_dataset.py
+  - my_dataset_background  # Negative samples can also be included
+
+val_ratio: 0.2           # Allocate 20% to validation data (Val). (Default: 0.2)
+weights: "yolov8m.pt"    # Pre-trained base model
+project: "my_models"     # Project directory for saving models
+name: "room_detector"    # Saved model name
+epochs: 100
+batch: 16
+imgsz: 640

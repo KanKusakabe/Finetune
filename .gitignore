@@ -1,0 +1,13 @@
+.venv/
+
+.uv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+.env
+
+.history/
+.vscode/
+.idea/
+
