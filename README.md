@@ -93,6 +93,32 @@ uv run python create_dataset.py background.mp4 --negative --dir my_dataset_backg
 
 ---
 
+---
+
+### 🎨 Step 1.5: Manual Adjustment (Optional) (`modify_dataset.py`)
+
+You can review and manually adjust the automatically generated dataset using the included GUI tool.
+This is useful if you want to delete incorrect bounding boxes or add missing ones before training.
+
+```bash
+# Basic usage
+uv run python modify_dataset.py --dir my_dataset_room
+
+# Show only images where at least one label is duplicated (useful for finding DINO false positives)
+uv run python modify_dataset.py --dir my_dataset_room --duplicated 2
+```
+
+**Controls:**
+- `Space` / `N`: Next Image
+- `B`: Previous Image
+- `D`: Delete Current Image Completely
+- `Q`: Quit & Save
+- `Left Click & Drag`: Draw a new bounding box
+- `Right Click`: Delete the clicked bounding box
+- `0-9`: Change the class ID for drawing
+
+---
+
 ### 🚀 Step 2: Model Training (`train.py`)
 
 Runs YOLO model training using the created datasets.
@@ -215,6 +241,32 @@ uv run python create_dataset.py background.mp4 --negative --dir my_dataset_backg
 **便利なオプション:**
 - `--interval <数値>`: 動画から何フレームごとに画像を抽出するか。デフォルトは `5` です。
 - `--threshold <数値>`: テキストでの検出の確信度しきい値。デフォルトは `0.35` です。
+
+---
+
+---
+
+### 🎨 ステップ1.5: 手動での微調整（オプション） (`modify_dataset.py`)
+
+自動生成されたデータセットは、付属のGUIツールを使って手動で確認・修正することができます。
+誤検出されたボックスを削除したり、検出漏れを追加してから学習に進む場合に便利です。
+
+```bash
+# 基本的な起動
+uv run python modify_dataset.py --dir my_dataset_room
+
+# 1つの画像内に同じラベルが2つ以上ある画像だけを抽出表示（DINOの多重検出チェックに便利）
+uv run python modify_dataset.py --dir my_dataset_room --duplicated 2
+```
+
+**操作方法:**
+- `Space` / `N`: 次の画像へ
+- `B`: 前への画像へ (Back)
+- `D`: 表示中の画像をファイルごと削除
+- `Q`: 終了して保存
+- `左クリック＆ドラッグ`: 新しいバウンディングボックスを描画
+- `右クリック`: クリックしたバウンディングボックスを削除
+- `数字キー(0-9)`: 描画する対象のクラスIDを変更
 
 ---
 
